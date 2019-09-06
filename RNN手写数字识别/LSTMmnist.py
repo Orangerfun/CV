@@ -15,6 +15,7 @@ y=tf.placeholder('float',[None,n_classes])
 x1=tf.unstack(x,n_steps,1)   #详见D:\Desktop\Admin\LearningFile\Note\TF
 
 lstm_cell=tf.contrib.rnn.BasicLSTMCell(n_hidden,forget_bias=1)
+lstm_cell=tf.nn.rnn_cell.DropoutWrapper(lstm_cell,input_keep_prob=0.9,output_keep_prob=0.8)
 
 #静态单层RNN网络,输入必须是列表形式
 #outputs,states=tf.contrib.rnn.static_rnn(lstm_cell,x1,dtype=tf.float32)   #outputs.shape[batchsize,n_steps,n_hidden]   [None,28,128]
@@ -31,10 +32,15 @@ lstm_cell=tf.contrib.rnn.BasicLSTMCell(n_hidden,forget_bias=1)
 # outputs,_=tf.contrib.rnn.static_rnn(mcell,x1,dtype=tf.float32)
 
 #动态多层网络
-gru=tf.contrib.rnn.GRUCell(n_hidden)
-lstm_cell=tf.contrib.rnn.LSTMCell(n_hidden)
-mcell=tf.contrib.rnn.MultiRNNCell([gru,lstm_cell])
-outputs,states=tf.nn.dynamic_rnn(mcell,x,dtype=tf.float32)
+# gru=tf.contrib.rnn.GRUCell(n_hidden)
+# lstm_cell=tf.contrib.rnn.LSTMCell(n_hidden)
+# mcell=tf.contrib.rnn.MultiRNNCell([gru,lstm_cell])
+# outputs,states=tf.nn.dynamic_rnn(mcell,x,dtype=tf.float32)
+# outputs=tf.transpose(outputs,[1,0,2])
+
+#单层动态双向RNN
+outputs,state=tf.nn.bidirectional_dynamic_rnn(lstm_cell,lstm_cell,x,dtype=tf.float32)
+outputs=tf.concat(outputs,2)
 outputs=tf.transpose(outputs,[1,0,2])
 
 pred=tf.contrib.layers.fully_connected(outputs[-1],n_classes)
@@ -76,7 +82,7 @@ with tf.Session() as sess:
 ###dynamic one:  91
 ###static mul: 97
 ###dynamic mul: 1.0
-
+###bi rnn    97
 
 
 
